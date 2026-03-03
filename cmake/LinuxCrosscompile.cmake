@@ -1,0 +1,16 @@
+set(CMAKE_SYSTEM_NAME Windows)
+
+set(CMAKE_C_COMPILER clang-cl)
+set(CMAKE_CXX_COMPILER clang-cl)
+set(CMAKE_LINKER lld-link)
+
+set(CMAKE_C_COMPILER_FRONTEND_VARIANT MSVC)
+set(CMAKE_CXX_COMPILER_FRONTEND_VARIANT MSVC)
+
+add_compile_options(/winsysroot /opt/msvc --target=x86_64-pc-windows-msvc)
+add_link_options(/winsysroot:/opt/msvc)
+
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)

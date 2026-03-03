@@ -39,7 +39,29 @@ cd .\build\Debug
 .\MinecraftClient.exe
 ```
 
+## CMake (Linux)
+
+MinecraftConsoles does not support Linux but can cross-compile a Windows build from Linux.
+
+You will need a Windows MSVC SDK. You can get one from [msvc-wine](https://github.com/mstorsjo/msvc-wine).
+
+Configure:
+```
+MinecraftConsoles $ mkdir build && cd build
+MinecraftConsoles/build $ cmake .. -B . -G Ninja -DCMAKE_TOOLCHAIN_FILE=../cmake/LinuxCrosscompile.cmake -DCMAKE_BUILD_TYPE=<Debug or Release>
+```
+
+Build:
+```
+MinecraftConsoles/build $ ninja
+```
+
+Run:
+```
+MinecraftConsoles/build $ wine MinecraftClient.exe
+```
+
 Notes:
-- The CMake build is Windows-only and x64-only.
+- The CMake build will only compile a Windows binary, and non-win32 systems will cross-compile one.
 - Post-build asset copy is automatic for `MinecraftClient` in CMake (Debug and Release variants).
 - The game relies on relative paths (for example `Common\Media\...`), so launching from the output directory is required.

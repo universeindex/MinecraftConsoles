@@ -1,44 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(MinecraftConsoles LANGUAGES C CXX ASM_MASM)
-
-#if(NOT WIN32)
-#  message(FATAL_ERROR "This CMake build currently supports Windows only.")
-#endif()
-
-if(UNIX)
-  message(NOTICE "LCE is cross-compiling a Windows binary using clang-cl.
-  This expects your system has `clang-cl` and `llvm-ml` installed and in PATH.
-  You must also install MinGW and set the variable LCE_WINDOWS_SDK to your Windows SDK (provided by MinGW)")
-
-  message(WARNING "Skipping compiler check")
-
-  set(CMAKE_C_COMPILER_WORKS True)
-
-  if(NOT DEFINED LCE_WINDOWS_SDK)
-    #message(FATAL_ERROR "LCE_WINDOWS_SDK is unset!")
-  endif()
-
-  set(CMAKE_CROSSCOMPILING True)
-  set(CMAKE_SYSTEM_NAME Windows)
-  
-  #find_program(clang-cl REQUIRED)
-  #find_program(llvm-ml REQUIRED)
-
-  set(CMAKE_C_COMPILER clang-cl)
-  set(CMAKE_CXX_COMPILER clang-cl)
-  set(CMAKE_ASM_MASM_COMPILER llvm-ml)
-  set(CMAKE_LINKER lld-link)
-
-  add_compile_options(/winsysroot /opt/msvc /clang:--target=x86_64-pc-windows-msvc)
-  add_link_options(/winsysroot /opt/msvc /clang:--target=x86_64-pc-windows-msvc)
-
-  set(MSVC True)
-endif()
-
-if(MSVC)
-  message(NOTICE "CMake detecting MSVC")
-endif()
+project(MinecraftConsoles LANGUAGES C CXX)
 
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8 AND WIN32) # This check is broken on linux+clang-cl
   message(FATAL_ERROR "Use a 64-bit generator/toolchain (x64).")
@@ -95,8 +57,8 @@ set_target_properties(MinecraftClient PROPERTIES
 target_link_libraries(MinecraftClient PRIVATE
   MinecraftWorld
   d3d11
-  XInput9_1_0
-  Shcore
+  xinput9_1_0 # Changed capitalization to fix builds on case-sensitive filesystems
+  shcore      # ditto
   wsock32
   legacy_stdio_definitions
   "${CMAKE_CURRENT_SOURCE_DIR}/Minecraft.Client/Windows64/Iggy/lib/iggy_w64.lib"
