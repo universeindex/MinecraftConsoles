@@ -16,6 +16,7 @@
 #include "..\Minecraft.World\ArrayWithLength.h"
 #include "..\Minecraft.World\net.minecraft.network.packet.h"
 #include "..\Minecraft.World\net.minecraft.network.h"
+#include "Windows64\Windows64_NameXuid.h"
 #include "..\Minecraft.World\Pos.h"
 #include "..\Minecraft.World\ProgressListener.h"
 #include "..\Minecraft.World\HellRandomLevelSource.h"
@@ -29,6 +30,10 @@
 #include "Xbox\Network\NetworkPlayerXbox.h"
 #elif defined(__PS3__) || defined(__ORBIS__)
 #include "Common\Network\Sony\NetworkPlayerSony.h"
+#endif
+
+#ifdef _WINDOWS64
+#include "Windows64/Windows64_Launcher.h"
 #endif
 
 // 4J - this class is fairly substantially altered as there didn't seem any point in porting code for banning, whitelisting, ops etc.
@@ -49,6 +54,10 @@ PlayerList::PlayerList(MinecraftServer *server)
 	viewDistance = 16;
 #else
 	viewDistance = 10;
+#endif
+
+#ifdef _WINDOWS64
+	viewDistance = Windows64Launcher::GetViewDistance();
 #endif
 
 	//int viewDistance = server->settings->getInt(L"view-distance", 10);
@@ -91,6 +100,33 @@ void PlayerList::placeNewPlayer(Connection *connection, shared_ptr<ServerPlayer>
 	{
 		player->enableAllPlayerPrivileges(true);			
 		player->setPlayerGamePrivilege(Player::ePlayerGamePrivilege_HOST,1);
+	}
+
+	// A reconnect from the same machine can race with platform-level leave notifications.
+	// If this is the first active player we can currently see for this system, clear the per-system
+	// chunk-sent flags so initial terrain is always resent for this login.
+	if (networkPlayer != NULL)
+	{
+		bool hasActiveSameSystemPlayer = false;
+		for (AUTO_VAR(it, players.begin()); it < players.end(); ++it)
+		{
+			shared_ptr<ServerPlayer> existingPlayer = *it;
+			if (existingPlayer == NULL || existingPlayer->connection == NULL) continue;
+
+			INetworkPlayer* existingNetworkPlayer = existingPlayer->connection->getNetworkPlayer();
+			if (existingNetworkPlayer == NULL) continue;
+
+			if (networkPlayer->IsSameSystem(existingNetworkPlayer))
+			{
+				hasActiveSameSystemPlayer = true;
+				break;
+			}
+		}
+
+		if (!hasActiveSameSystemPlayer)
+		{
+			g_NetworkManager.SystemFlagClearForSystem(networkPlayer);
+		}
 	}
 
 #if defined(__PS3__) || defined(__ORBIS__)
@@ -520,12 +556,13 @@ shared_ptr<ServerPlayer> PlayerList::getPlayerForLogin(PendingConnection *pendin
 	player->setOnlineXuid( onlineXuid ); // 4J Added
 #ifdef _WINDOWS64
 	{
+		PlayerUID persistentXuid = Win64NameXuid::ResolvePersistentXuidFromName(userName);
+		player->setXuid(persistentXuid);
+
 		INetworkPlayer* np = pendingConnection->connection->getSocket()->getPlayer();
 		if (np != NULL)
 		{
-			PlayerUID realXuid = np->GetUID();
-			player->setXuid(realXuid);
-			player->setOnlineXuid(realXuid);
+			player->setOnlineXuid(np->GetUID());
 		}
 	}
 #endif

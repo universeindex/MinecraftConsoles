@@ -790,7 +790,9 @@ void UIController::tickInput()
 				UIScene *pScene = NULL;
 				for (int grp = 0; grp < eUIGroup_COUNT && !pScene; ++grp)
 				{
+#ifdef _DEBUG_MENUS_ENABLED
 					pScene = m_groups[grp]->GetTopScene(eUILayer_Debug);
+#endif
 					if (!pScene) pScene = m_groups[grp]->GetTopScene(eUILayer_Tooltips);
 					if (!pScene) pScene = m_groups[grp]->GetTopScene(eUILayer_Error);
 					if (!pScene) pScene = m_groups[grp]->GetTopScene(eUILayer_Alert);

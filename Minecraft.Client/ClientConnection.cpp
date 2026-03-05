@@ -762,6 +762,18 @@ void ClientConnection::handleAddPlayer(shared_ptr<AddPlayerPacket> packet)
 			return;
 		}
 	}
+#ifdef _WINDOWS64
+	// Win64 player-data XUIDs are resolved from player name, so also guard against creating
+	// a duplicate remote player for a local slot by checking the username directly.
+	for (unsigned int idx = 0; idx < XUSER_MAX_COUNT; ++idx)
+	{
+		if (minecraft->localplayers[idx] != NULL && minecraft->localplayers[idx]->name == packet->name)
+		{
+			app.DebugPrintf("AddPlayerPacket received for local player name %ls\n", packet->name.c_str());
+			return;
+		}
+	}
+#endif
 /*#ifdef _WINDOWS64
 	// On Windows64 all XUIDs are INVALID_XUID so the XUID check above never fires.
 	// packet->m_playerIndex is the server-assigned sequential index (set via LoginPacket),

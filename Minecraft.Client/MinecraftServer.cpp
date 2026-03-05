@@ -238,6 +238,7 @@ static bool ExecuteConsoleCommand(MinecraftServer *server, const wstring &rawCom
 		{
 			playerList->saveAll(NULL, false);
 		}
+
 		server->info(L"World saved.");
 		return true;
 	}
@@ -1499,6 +1500,8 @@ void MinecraftServer::stopServer(bool didInit)
 			{
 				levels[0]->saveToDisc(Minecraft::GetInstance()->progressRenderer, false);
 			}
+
+			printf("Saved World On Close\n");
 		}
 	}
 	// reset the primary player signout flag
@@ -2208,6 +2211,8 @@ void MinecraftServer::main(__int64 seed, void *lpParameter)
 	ShutdownManager::HasStarted(ShutdownManager::eServerThread );
 #endif
 	server = new MinecraftServer();
+	server->setSaveOnExit(true);
+
 	server->run(seed, lpParameter);
 	delete server;
 	server = NULL;
