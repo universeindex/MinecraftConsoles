@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 3.24)
 
 project(MinecraftConsoles LANGUAGES C CXX RC ASM_MASM)
 
-if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8 AND WIN32) # triggers when cross compiling on linux
+if(NOT WIN32)
+  message(FATAL_ERROR "This CMake build currently supports Windows only.")
+endif()
+
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
   message(FATAL_ERROR "Use a 64-bit generator/toolchain (x64).")
 endif()
 
